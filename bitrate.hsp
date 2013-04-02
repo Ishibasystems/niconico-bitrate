@@ -1,0 +1,120 @@
+	#packopt xsize 330
+	#packopt ysize 180
+
+	#module
+
+		#deffunc ifred int v0,int v2,str v1
+			if v2{
+				if v0{
+					color$ff
+					mes v1+"×"
+				}else{
+					color,$ff/2
+					mes v1+"△"
+				}
+				color,,$ff
+			}else{
+				mes v1+"○"
+			}
+			return
+
+	#global
+
+	syscolor 15
+	boxf
+	syscolor 7
+	font "Dialog",12
+	BYTE040M=335544
+	BYTE100M=838860
+	kbps=320,256,192,128,96,64,56,48,40,128,96,64,56,48,40,32,48,40,32,24,20,16
+	AACstr=""
+	movie_="512"
+	time_h="0"
+	time_m="3"
+	time_s="0"
+	AAC=9
+	bitw="5"
+	repeat 22
+		f="HE"
+		if cnt<9 : f="LC"
+		if cnt>15 : f+="v2"
+		AACstr+="AAC-"+f+" "+kbps.cnt+"kbps\n"
+	loop
+	pos 2,2
+	mes"ニコ動mp4計算機"
+	objsize 30,18
+	pos 07,20
+	mes"動画時間"
+	pos 07,38
+	input time_h
+	pos 39,40
+	mes"h"
+	pos 47,38
+	input time_m
+	pos 79,40
+	mes"m"
+	pos 87,38
+	input time_s
+	pos 119,40
+	mes"s"
+	objsize 120,18
+	pos 07,60
+	mes"音声ビットレート"
+	combox AAC,150,AACstr
+	pos 07,100
+	mes"映像ビットレート(kbps)"
+	input movie_
+	pos 07,140
+	mes"ビットレート誤差(kbps)"
+	input bitw
+
+	;line 300,0,300,180
+	;line 0,180,300,180
+*main
+	wait 20
+	if 	time0h!int(time_h)|time0m!int(time_m)|time0s!int(time_s)|kbps0!kbps.AAC|movie0!abs(int(movie_))|bitw0!abs(int(bitw)){
+		time0h=int(time_h)
+		time0m=int(time_m)
+		time0s=int(time_s)
+		kbps0=kbps.AAC
+		movie0=abs(int(movie_))
+		bitw0=abs(int(bitw))
+		if strlen(movie_)>6 : movie_="512" : objprm 4,movie_
+		if limit(bitw0,0,9)!bitw0 : bitw="5" : objprm 5,bitw
+		if strlen(time_h)>6 : time_h="0" : objprm 0,time_h
+		if strlen(time_m)>6 : time_m="3" : objprm 1,time_m
+		if strlen(time_s)>6 : time_s="0" : objprm 2,time_s
+		time0=(time0h*60+time0m)*60+time0s
+		v=kbps0+movie0
+		redraw 0
+		syscolor 15
+		boxf 143,4,330,179
+		syscolor 7
+		pos 145,5
+		mes"総ビットレート評価
+		pos 150,20
+		mes""+v+"±"+bitw0+" kbps"
+		color,,$ff
+		ifred v-bitw0>656,v+bitw0>656,"一般会員："
+		mes"プレミアム会員：○"
+		ifred v-bitw0>245,v+bitw0>245,"エコノミー回避："
+
+		pos 145,75
+		syscolor 7
+		mes"ファイルサイズ評価
+		pos 150,90
+		mes strf("%.1f",1000.0*time0*v/8388608)+" MB"
+		color,,$ff
+		ifred time0*(v-bitw0)>BYTE040M,time0*(v+bitw0)>BYTE040M,"一般会員："
+		ifred time0*(v-bitw0)>BYTE100M,time0*(v+bitw0)>BYTE100M,"プレミアム会員："
+
+		pos 145,130
+		syscolor 7
+		mes"総ビットレート優先評価
+		pos 150,145
+		color,$ff/2
+		mes"一般会員："+(BYTE040M/v/3600)+" h "+((BYTE040M/v\3600)/60)+" m "+((BYTE040M/v\60))+" s "
+		mes"プレミアム会員："+(BYTE100M/v/3600)+" h "+((BYTE100M/v\3600)/60)+" m "+((BYTE100M/v\60))+" s "
+		redraw 1
+	}
+	goto*main
